@@ -42,13 +42,13 @@ partial struct OVRAnchor
             public override int GetHashCode() => unchecked(_markerId.GetHashCode() * 486187739 + _requestId.GetHashCode());
         }
 
-        private static Dictionary<Key, OVRTelemetryMarker> s_markers = new();
+        private static Dictionary<Key, OVRTelemetryMarker> s_markers = new Dictionary<Key, OVRTelemetryMarker>();
 
         // Called from OVRAnchor.Init
         public static void OnInit() => s_markers.Clear();
 
         public static void AddMarker(ulong requestId, OVRTelemetryMarker marker)
-            => s_markers.Add(new(marker, requestId), marker);
+            => s_markers.Add(new Key(marker, requestId), marker);
 
         public static OVRTelemetryMarker Start(MarkerId markerId, ulong requestId, OVRPlugin.Result result)
         {
@@ -71,7 +71,7 @@ partial struct OVRAnchor
                                              $"method returns a successful result.", nameof(requestId));
                 }
 
-                s_markers.Add(new(marker, requestId), marker);
+                s_markers.Add(new Key(marker, requestId), marker);
             }
             else
             {
@@ -85,23 +85,21 @@ partial struct OVRAnchor
 
         // Sets the asynchronous result (usually received in the OpenXR event queue) but does not end the marker.
         public static OVRTelemetryMarker? SetAsyncResult(MarkerId markerId, ulong requestId, long result)
-            => s_markers.Remove(new(markerId, requestId), out var marker)
-            ? marker
-                .AddAnnotation(Annotation.AsynchronousResult, result)
-                .SetResult(result >= 0 ? OVRPlugin.Qpl.ResultType.Success : OVRPlugin.Qpl.ResultType.Fail)
-            : null;
+            => s_markers.TryGetValue(new Key(markerId, requestId), out var marker)
+                ? marker.AddAnnotation(Annotation.AsynchronousResult, result).SetResult(result >= 0 ? OVRPlugin.Qpl.ResultType.Success : OVRPlugin.Qpl.ResultType.Fail)
+                : default;
 
         public static OVRTelemetryMarker? GetMarker(MarkerId markerId, ulong requestId)
-            => TryGetMarker(markerId, requestId, out var marker) ? marker : null;
+            => TryGetMarker(markerId, requestId, out var marker) ? marker : default; // TODO: CHECK MAYBE default if wrong
 
         public static bool TryGetMarker(MarkerId markerId, ulong requestId, out OVRTelemetryMarker marker)
-            => s_markers.TryGetValue(new(markerId, requestId), out marker);
+            => s_markers.TryGetValue(new Key(markerId, requestId), out marker);
 
         public static bool Remove(MarkerId markerId, ulong requestId, out OVRTelemetryMarker marker)
-            => s_markers.Remove(new(markerId, requestId), out marker);
-
+            => s_markers.TryGetValue(new Key(markerId, requestId), out marker);
+ 
         public static OVRTelemetryMarker? GetRemove(MarkerId markerId, ulong requestId)
-            => Remove(markerId, requestId, out var marker) ? marker : null;
+            => Remove(markerId, requestId, out var marker) ? marker : default;
 
         internal enum MarkerId
         {

@@ -1030,7 +1030,7 @@ public readonly partial struct OVRDynamicObject : IOVRAnchorComponent<OVRDynamic
 
 partial struct OVRAnchor
 {
-    internal static readonly Dictionary<Type, SpaceComponentType> _typeMap = new()
+    internal static readonly Dictionary<Type, SpaceComponentType> _typeMap = new Dictionary<Type, SpaceComponentType>()
     {
         { typeof(OVRLocatable), SpaceComponentType.Locatable },
         { typeof(OVRStorable), SpaceComponentType.Storable },

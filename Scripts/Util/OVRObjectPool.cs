@@ -36,7 +36,7 @@ internal static class OVRObjectPool
 
     static class Storage<T> where T : class, new()
     {
-        static readonly HashSet<T> s_hashSet = new();
+        static readonly HashSet<T> s_hashSet = new HashSet<T>();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool Remove(T item)

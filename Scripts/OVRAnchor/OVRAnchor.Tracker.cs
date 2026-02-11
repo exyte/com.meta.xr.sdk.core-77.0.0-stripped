@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) Meta Platforms, Inc. and affiliates.
  * All rights reserved.
  *
@@ -157,9 +157,14 @@ partial struct OVRAnchor
         /// <returns>Returns a hash code for this <see cref="TrackerConfiguration"/>.</returns>
         public override int GetHashCode()
         {
-            var hashCode = 0;
-            hashCode = HashCode.Combine(hashCode, KeyboardTrackingEnabled);
-            return hashCode;
+            // Older Unity/.NET profiles do not provide System.HashCode,
+            // so compute a simple hash based on the configuration fields.
+            unchecked
+            {
+                int hash = 17;
+                hash = hash * 31 + KeyboardTrackingEnabled.GetHashCode();
+                return hash;
+            }
         }
 
         /// <summary>
@@ -344,7 +349,7 @@ partial struct OVRAnchor
                     await Task.Yield();
                 }
 
-                return new(tracker);
+                return new AsyncLock(tracker);
             }
         }
 

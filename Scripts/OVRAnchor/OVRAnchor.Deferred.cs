@@ -38,7 +38,7 @@ partial struct OVRAnchor
     {
         public ulong Space;
         public SpaceComponentType ComponentType;
-        public static DeferredKey FromEvent(OVRDeserialize.SpaceSetComponentStatusCompleteData eventData) => new()
+        public static DeferredKey FromEvent(OVRDeserialize.SpaceSetComponentStatusCompleteData eventData) => new DeferredKey()
         {
             Space = eventData.Space,
             ComponentType = eventData.ComponentType,
@@ -49,7 +49,7 @@ partial struct OVRAnchor
         public override int GetHashCode() => unchecked(Space.GetHashCode() * 486187739 + ((int)ComponentType).GetHashCode());
     }
 
-    private static readonly Dictionary<DeferredKey, List<DeferredValue>> _deferredTasks = new();
+    private static readonly Dictionary<DeferredKey, List<DeferredValue>> _deferredTasks = new Dictionary<DeferredKey, List<DeferredValue>>();
 
     internal static OVRTask<bool> CreateDeferredSpaceComponentStatusTask(ulong space, SpaceComponentType componentType, bool enabledDesired, double timeout
     )

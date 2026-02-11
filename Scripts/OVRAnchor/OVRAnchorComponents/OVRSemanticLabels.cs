@@ -107,22 +107,22 @@ public readonly partial struct OVRSemanticLabels : IOVRAnchorComponent<OVRSemant
     // NOTE: unsupported labels are always OTHER (including deprecated DESK).
     internal static Classification FromApiLabel(ReadOnlySpan<char> singleLabel)
     {
-        if (singleLabel.SequenceEqual("FLOOR")) return Classification.Floor;
-        if (singleLabel.SequenceEqual("CEILING")) return Classification.Ceiling;
-        if (singleLabel.SequenceEqual("WALL_FACE")) return Classification.WallFace;
-        if (singleLabel.SequenceEqual("COUCH")) return Classification.Couch;
-        if (singleLabel.SequenceEqual("DOOR_FRAME")) return Classification.DoorFrame;
-        if (singleLabel.SequenceEqual("WINDOW_FRAME")) return Classification.WindowFrame;
-        if (singleLabel.SequenceEqual("OTHER")) return Classification.Other;
-        if (singleLabel.SequenceEqual("STORAGE")) return Classification.Storage;
-        if (singleLabel.SequenceEqual("BED")) return Classification.Bed;
-        if (singleLabel.SequenceEqual("SCREEN")) return Classification.Screen;
-        if (singleLabel.SequenceEqual("LAMP")) return Classification.Lamp;
-        if (singleLabel.SequenceEqual("PLANT")) return Classification.Plant;
-        if (singleLabel.SequenceEqual("TABLE")) return Classification.Table;
-        if (singleLabel.SequenceEqual("WALL_ART")) return Classification.WallArt;
-        if (singleLabel.SequenceEqual("INVISIBLE_WALL_FACE")) return Classification.InvisibleWallFace;
-        if (singleLabel.SequenceEqual("GLOBAL_MESH")) return Classification.SceneMesh;
+        if (singleLabel.SequenceEqual("FLOOR".AsSpan())) return Classification.Floor;
+        if (singleLabel.SequenceEqual("CEILING".AsSpan())) return Classification.Ceiling;
+        if (singleLabel.SequenceEqual("WALL_FACE".AsSpan())) return Classification.WallFace;
+        if (singleLabel.SequenceEqual("COUCH".AsSpan())) return Classification.Couch;
+        if (singleLabel.SequenceEqual("DOOR_FRAME".AsSpan())) return Classification.DoorFrame;
+        if (singleLabel.SequenceEqual("WINDOW_FRAME".AsSpan())) return Classification.WindowFrame;
+        if (singleLabel.SequenceEqual("OTHER".AsSpan())) return Classification.Other;
+        if (singleLabel.SequenceEqual("STORAGE".AsSpan())) return Classification.Storage;
+        if (singleLabel.SequenceEqual("BED".AsSpan())) return Classification.Bed;
+        if (singleLabel.SequenceEqual("SCREEN".AsSpan())) return Classification.Screen;
+        if (singleLabel.SequenceEqual("LAMP".AsSpan())) return Classification.Lamp;
+        if (singleLabel.SequenceEqual("PLANT".AsSpan())) return Classification.Plant;
+        if (singleLabel.SequenceEqual("TABLE".AsSpan())) return Classification.Table;
+        if (singleLabel.SequenceEqual("WALL_ART".AsSpan())) return Classification.WallArt;
+        if (singleLabel.SequenceEqual("INVISIBLE_WALL_FACE".AsSpan())) return Classification.InvisibleWallFace;
+        if (singleLabel.SequenceEqual("GLOBAL_MESH".AsSpan())) return Classification.SceneMesh;
 
         Debug.LogWarning($"Unknown classification: {singleLabel.ToString()}");
         return Classification.Other;
@@ -147,7 +147,7 @@ public readonly partial struct OVRSemanticLabels : IOVRAnchorComponent<OVRSemant
         {
             // skip any labels we no longer support
 #pragma warning disable CS0618 // Type or member is obsolete
-            if (!label.SequenceEqual(OVRSceneManager.Classification.Desk))
+            if (!label.SequenceEqual(OVRSceneManager.Classification.Desk.AsSpan()))
                 labels.Add(FromApiLabel(label));
 #pragma warning restore CS0618 // Type or member is obsolete
         }
@@ -198,7 +198,7 @@ public readonly partial struct OVRSemanticLabels : IOVRAnchorComponent<OVRSemant
                 labels.Add(ToApiLabel(classification));
             }
 
-            return string.Join(',', labels);
+            return string.Join(",", labels);
         }
     }
 }

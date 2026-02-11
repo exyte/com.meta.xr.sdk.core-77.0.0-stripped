@@ -23,7 +23,6 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
-using System.Threading.Tasks.Sources;
 using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
 
@@ -132,13 +131,13 @@ public static partial class OVRTask
         => Create<TResult>(GetId(id, eventType));
 
     internal static Builder Build(bool success, ulong requestId)
-        => new(success ? OVRPlugin.Result.Success : OVRPlugin.Result.Failure, GetId(requestId));
+        => new  Builder(success ? OVRPlugin.Result.Success : OVRPlugin.Result.Failure, GetId(requestId));
 
     internal static Builder Build(OVRPlugin.Result result, ulong requestId)
-        => new(result, GetId(requestId));
+        => new  Builder(result, GetId(requestId));
 
     internal static Builder Build(OVRPlugin.Result result, ulong requestId, OVRPlugin.EventType eventType)
-        => new(result, GetId(requestId, eventType));
+        => new  Builder(result, GetId(requestId, eventType));
     /// \endcond
 
     /// <summary>
@@ -332,30 +331,30 @@ public readonly struct OVRTask<TResult> : IEquatable<OVRTask<TResult>>, IDisposa
     /// \cond
     #region static
 
-    private static readonly HashSet<Guid> Pending = new();
-    private static readonly Dictionary<Guid, TResult> Results = new();
-    private static readonly Dictionary<Guid, Exception> Exceptions = new();
-    private static readonly Dictionary<Guid, TaskSource> Sources = new();
-    private static readonly Dictionary<Guid, AwaitableSource> AwaitableSources = new();
-    private static readonly Dictionary<Guid, Action> Continuations = new();
+    private static readonly HashSet<Guid> Pending = new HashSet<Guid>();
+    private static readonly Dictionary<Guid, TResult> Results = new Dictionary<Guid, TResult>();
+    private static readonly Dictionary<Guid, Exception> Exceptions = new Dictionary<Guid, Exception>();
+    private static readonly Dictionary<Guid, TaskSource> Sources = new Dictionary<Guid, TaskSource>();
+    private static readonly Dictionary<Guid, AwaitableSource> AwaitableSources = new Dictionary<Guid, AwaitableSource>();
+    private static readonly Dictionary<Guid, Action> Continuations = new Dictionary<Guid, Action>();
 
     #region ContinueWith Data
     private delegate void ContinueWithInvoker(Guid guid, TResult result);
     private delegate bool ContinueWithRemover(Guid guid);
-    private static readonly Dictionary<Guid, ContinueWithInvoker> ContinueWithInvokers = new();
-    private static readonly Dictionary<Guid, ContinueWithRemover> ContinueWithRemovers = new();
-    private static readonly HashSet<Action> ContinueWithClearers = new();
+    private static readonly Dictionary<Guid, ContinueWithInvoker> ContinueWithInvokers = new Dictionary<Guid, ContinueWithInvoker>();
+    private static readonly Dictionary<Guid, ContinueWithRemover> ContinueWithRemovers = new Dictionary<Guid, ContinueWithRemover>();
+    private static readonly HashSet<Action> ContinueWithClearers = new HashSet<Action>();
     #endregion
 
     #region InternalData Data
     private delegate bool InternalDataRemover(Guid guid);
-    private static readonly Dictionary<Guid, InternalDataRemover> InternalDataRemovers = new();
-    private static readonly HashSet<Action> InternalDataClearers = new();
+    private static readonly Dictionary<Guid, InternalDataRemover> InternalDataRemovers = new Dictionary<Guid, InternalDataRemover>();
+    private static readonly HashSet<Action> InternalDataClearers = new HashSet<Action>();
     #endregion
 
     #region Incremental results data
-    private static readonly Dictionary<Guid, Action<Guid>> IncrementalResultSubscriberRemovers = new();
-    private static readonly HashSet<Action> IncrementalResultSubscriberClearers = new();
+    private static readonly Dictionary<Guid, Action<Guid>> IncrementalResultSubscriberRemovers = new Dictionary<Guid, Action<Guid>>();
+    private static readonly HashSet<Action> IncrementalResultSubscriberClearers = new HashSet<Action>();
     #endregion
 
     /// <summary>
@@ -460,17 +459,19 @@ public readonly struct OVRTask<TResult> : IEquatable<OVRTask<TResult>>, IDisposa
     /// <param name="exception">The exception</param>
     internal void SetException(Exception exception)
     {
-        if (AwaitableSources.Remove(_id, out var awaitableSource))
+        if (AwaitableSources.TryGetValue(_id, out var awaitableSource))
         {
             awaitableSource.SetException(exception);
         }
-        else if (Sources.Remove(_id, out var source))
+        else if (Sources.TryGetValue(_id, out var source))
         {
+            Sources.Remove(_id);
             source.SetException(exception);
+            OVRObjectPool.Return(source);
         }
         else if (TryRemoveInternalData())
         {
-            if (ContinueWithInvokers.Remove(_id, out var invoker))
+            if (ContinueWithInvokers.TryGetValue(_id, out var invoker))
             {
                 // When using ContinueWith, there is no way for the caller to catch the exception.
                 // However, we discourage exceptions to signal anything other than API misuse.
@@ -499,12 +500,12 @@ public readonly struct OVRTask<TResult> : IEquatable<OVRTask<TResult>>, IDisposa
     {
         if (!Pending.Remove(_id)) return false;
 
-        if (InternalDataRemovers.Remove(_id, out var internalDataRemover))
+        if (InternalDataRemovers.TryGetValue(_id, out var internalDataRemover))
         {
             internalDataRemover(_id);
         }
 
-        if (IncrementalResultSubscriberRemovers.Remove(_id, out var subscriberRemover))
+        if (IncrementalResultSubscriberRemovers.TryGetValue(_id, out var subscriberRemover))
         {
             subscriberRemover(_id);
         }
@@ -514,7 +515,7 @@ public readonly struct OVRTask<TResult> : IEquatable<OVRTask<TResult>>, IDisposa
 
     private bool TryInvokeContinuation()
     {
-        if (Continuations.Remove(_id, out var continuation))
+        if (Continuations.TryGetValue(_id, out var continuation))
         {
             continuation();
             return true;
@@ -525,18 +526,20 @@ public readonly struct OVRTask<TResult> : IEquatable<OVRTask<TResult>>, IDisposa
 
     internal void SetResult(TResult result)
     {
-        if (AwaitableSources.Remove(_id, out var awaitableSource))
+        if (AwaitableSources.TryGetValue(_id, out var awaitableSource))
         {
             awaitableSource.SetResultAndReturnToPool(result);
         }
-        else if (Sources.Remove(_id, out var source))
+        else if (Sources.TryGetValue(_id, out var source))
         {
+            Sources.Remove(_id);
             source.SetResult(result);
+            OVRObjectPool.Return(source);
         }
         // If false, no one was waiting on the task
         else if (TryRemoveInternalData())
         {
-            if (ContinueWithInvokers.Remove(_id, out var invoker))
+            if (ContinueWithInvokers.TryGetValue(_id, out var invoker))
             {
                 invoker(_id, result);
             }
@@ -587,7 +590,7 @@ public readonly struct OVRTask<TResult> : IEquatable<OVRTask<TResult>>, IDisposa
     /// </remarks>
     private static class IncrementalResultSubscriber<T>
     {
-        private static readonly Dictionary<Guid, Action<T>> Subscribers = new();
+        private static readonly Dictionary<Guid, Action<T>> Subscribers = new Dictionary<Guid, Action<T>>();
 
         public static void Set(Guid taskId, Action<T> subscriber)
         {
@@ -817,7 +820,7 @@ public readonly struct OVRTask<TResult> : IEquatable<OVRTask<TResult>>, IDisposa
     /// </remarks>
     /// <returns>Returns the `Exception` associated with the task.</returns>
     /// <exception cref="InvalidOperationException">Thrown if <see cref="IsFaulted"/> is `false`.</exception>
-    public Exception GetException() => Exceptions.Remove(_id, out var exception)
+    public Exception GetException() => Exceptions.TryGetValue(_id, out var exception)
         ? exception
         : throw new InvalidOperationException($"Task {_id} is not in a faulted state. Check with {nameof(IsFaulted)}");
 
@@ -839,7 +842,7 @@ public readonly struct OVRTask<TResult> : IEquatable<OVRTask<TResult>>, IDisposa
     /// <seealso cref="TryGetResult"/>
     public TResult GetResult()
     {
-        if (Exceptions.Remove(_id, out var exception))
+        if (Exceptions.TryGetValue(_id, out var exception))
         {
             ExceptionDispatchInfo.Capture(exception).Throw();
         }
@@ -895,46 +898,32 @@ public readonly struct OVRTask<TResult> : IEquatable<OVRTask<TResult>>, IDisposa
     /// or if this method has already been called once.</exception>
     /// <seealso cref="HasResult"/>
     /// <seealso cref="GetResult"/>
-    public bool TryGetResult(out TResult result) => Results.Remove(_id, out result);
+    public bool TryGetResult(out TResult result) => Results.TryGetValue(_id, out result);
 
     #endregion
 
     /// \cond
-    private class TaskSource : IValueTaskSource<TResult>, OVRObjectPool.IPoolObject
+    private class TaskSource : OVRObjectPool.IPoolObject
     {
-        private ManualResetValueTaskSourceCore<TResult> _manualSource;
+        private TaskCompletionSource<TResult> _tcs;
 
-        public ValueTask<TResult> Task { get; private set; }
-
-        public TResult GetResult(short token)
-        {
-            try
-            {
-                return _manualSource.GetResult(token);
-            }
-            finally
-            {
-                OVRObjectPool.Return(this);
-            }
-        }
-
-        public ValueTaskSourceStatus GetStatus(short token) => _manualSource.GetStatus(token);
-
-        public void OnCompleted(Action<object> continuation, object state, short token, ValueTaskSourceOnCompletedFlags flags)
-            => _manualSource.OnCompleted(continuation, state, token, flags);
+        public Task<TResult> Task => _tcs.Task;
 
         void OVRObjectPool.IPoolObject.OnGet()
         {
-            _manualSource.Reset();
-            Task = new(this, _manualSource.Version);
+            // Unity 2020's .NET Framework profile doesn't include System.Threading.Tasks.Sources.
+            // Using TaskCompletionSource keeps behavior equivalent for awaiting the ValueTask.
+            _tcs = new TaskCompletionSource<TResult>();
         }
 
         void OVRObjectPool.IPoolObject.OnReturn()
-        { }
+        {
+            _tcs = null;
+        }
 
-        public void SetResult(TResult result) => _manualSource.SetResult(result);
+        public void SetResult(TResult result) => _tcs.TrySetResult(result);
 
-        public void SetException(Exception exception) => _manualSource.SetException(exception);
+        public void SetException(Exception exception) => _tcs.TrySetException(exception);
     }
     /// \endcond
 
@@ -982,7 +971,7 @@ public readonly struct OVRTask<TResult> : IEquatable<OVRTask<TResult>>, IDisposa
 
             var source = OVRObjectPool.Get<TaskSource>();
             Sources.Add(_id, source);
-            return source.Task;
+            return new ValueTask<TResult>(source.Task);
         }
     }
 

@@ -40,9 +40,9 @@ internal static class OVRTelemetryConstants
             public const string ProcessorType = "ProcessorType";
         }
 
-        public static readonly MarkerPoint InitializeInsightPassthrough = new("InitializeInsightPassthrough");
+        public static readonly MarkerPoint InitializeInsightPassthrough = new MarkerPoint("InitializeInsightPassthrough");
 
-        public static readonly MarkerPoint InitPermissionRequest = new("InitPermissionRequest");
+        public static readonly MarkerPoint InitPermissionRequest = new MarkerPoint("InitPermissionRequest");
     }
 
     public static class Editor

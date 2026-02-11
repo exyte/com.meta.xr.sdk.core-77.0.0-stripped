@@ -440,9 +440,9 @@ public readonly partial struct OVRLocatable : IOVRAnchorComponent<OVRLocatable>,
         {
             var pose = Poses[index];
 
-            if (pose.Position.HasValue && pose.Rotation.HasValue)
-            {
-                transform.SetPositionAndRotation(pose.Position.Value, pose.Rotation.Value);
+            if (pose.Position.HasValue && pose.Rotation.HasValue) {
+                transform.position = pose.Position.Value;
+                transform.rotation = pose.Rotation.Value;
             }
             else if (pose.Position.HasValue)
             {
@@ -477,7 +477,8 @@ public readonly partial struct OVRLocatable : IOVRAnchorComponent<OVRLocatable>,
 
             if (pose.Position.HasValue && pose.Rotation.HasValue)
             {
-                transform.SetLocalPositionAndRotation(pose.Position.Value, pose.Rotation.Value);
+                transform.localPosition = pose.Position.Value;
+                transform.localRotation = pose.Rotation.Value;
             }
             else if (pose.Position.HasValue)
             {
@@ -637,18 +638,18 @@ public readonly partial struct OVRLocatable : IOVRAnchorComponent<OVRLocatable>,
 
         if (anchors is Dictionary<OVRAnchor, Transform> dict)
         {
-            foreach (var (anchor, transform) in dict)
+            foreach (var kvp in dict)
             {
-                locatables.Add(GetLocatableOrDefault(anchor));
-                transformAccessArray.Add(transform);
+                locatables.Add(GetLocatableOrDefault(kvp.Key));
+                transformAccessArray.Add(kvp.Value);
             }
         }
         else
         {
-            foreach (var (anchor, transform) in anchors.ToNonAlloc())
+            foreach (var kvp in anchors.ToNonAlloc())
             {
-                locatables.Add(GetLocatableOrDefault(anchor));
-                transformAccessArray.Add(transform);
+                locatables.Add(GetLocatableOrDefault(kvp.Key));
+                transformAccessArray.Add(kvp.Value);
             }
         }
 

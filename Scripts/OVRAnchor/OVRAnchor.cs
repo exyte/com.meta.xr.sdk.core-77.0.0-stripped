@@ -508,7 +508,7 @@ public readonly partial struct OVRAnchor : IEquatable<OVRAnchor>, IDisposable
     /// }
     /// ]]></code></example>
     /// </remarks>
-    public static readonly OVRAnchor Null = new(0, Guid.Empty);
+    public static readonly OVRAnchor Null = new OVRAnchor(0, Guid.Empty);
 
     // Called by OVRManager event loop
     internal static void OnSpaceDiscoveryComplete(OVRDeserialize.SpaceDiscoveryCompleteData data)
@@ -823,7 +823,7 @@ public readonly partial struct OVRAnchor : IEquatable<OVRAnchor>, IDisposable
         var handle = Handle;
         unsafe
         {
-            return SaveSpacesAsync(new(&handle, 1));
+            return SaveSpacesAsync(new ReadOnlySpan<ulong>(&handle, 1));
         }
     }
 
@@ -896,7 +896,7 @@ public readonly partial struct OVRAnchor : IEquatable<OVRAnchor>, IDisposable
         var uuid = Uuid;
         unsafe
         {
-            return EraseSpacesAsync(default, new(&uuid, 1));
+            return EraseSpacesAsync(default, new ReadOnlySpan<Guid>(&uuid, 1));
         }
     }
 
@@ -987,7 +987,7 @@ public readonly partial struct OVRAnchor : IEquatable<OVRAnchor>, IDisposable
                 throw new ArgumentException($"{nameof(users)} must contain at least one user.");
 
             var handle = Handle;
-            return ShareSpacesAsync(new(&handle, 1), userList);
+            return ShareSpacesAsync(new ReadOnlySpan<ulong>(&handle, 1), userList);
         }
     }
 

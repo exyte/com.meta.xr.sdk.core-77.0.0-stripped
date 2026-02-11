@@ -110,7 +110,7 @@ public struct OVRResult<TStatus> : IEquatable<OVRResult<TStatus>>
     /// <returns>Returns a new <see cref="OVRResult"/>&lt;TStatus&gt; with the specified status.</returns>
     /// <seealso cref="FromSuccess"/>
     /// <seealso cref="FromFailure"/>
-    public static OVRResult<TStatus> From(TStatus status) => new(status);
+    public static OVRResult<TStatus> From(TStatus status) => new OVRResult<TStatus>(status);
 
     /// <summary>
     /// Creates a new <see cref="OVRResult"/>&lt;TStatus&gt; with the specified success status.
@@ -378,7 +378,7 @@ public struct OVRResult<TValue, TStatus> : IEquatable<OVRResult<TValue, TStatus>
     /// <returns>Returns a new <see cref="OVRResult"/>&lt;TValue, TStatus&gt; with the specified value and status.</returns>
     /// <seealso cref="FromSuccess"/>
     /// <seealso cref="FromFailure"/>
-    public static OVRResult<TValue, TStatus> From(TValue value, TStatus status) => new(value, status);
+    public static OVRResult<TValue, TStatus> From(TValue value, TStatus status) => new OVRResult<TValue, TStatus>(value, status);
 
     /// <summary>
     /// Creates a new <see cref="OVRResult"/>&lt;TValue, TStatus&gt; with the specified value and a success status.

@@ -75,10 +75,10 @@ struct OVRNativeList<T> : IDisposable, IReadOnlyList<T> where T : unmanaged
     public NativeArray<T> AsNativeArray() => _array.GetSubArray(0, Count);
 
     // NOTE: Add and AddRange invalidate the Span
-    public unsafe Span<T> AsSpan() => new(Data, Count);
+    public unsafe Span<T> AsSpan() => new Span<T>(Data, Count);
 
     // NOTE: Add and AddRange invalidate the ReadOnlySpan
-    public unsafe ReadOnlySpan<T> AsReadOnlySpan() => new(Data, Count);
+    public unsafe ReadOnlySpan<T> AsReadOnlySpan() => new ReadOnlySpan<T>(Data, Count);
 
     public NativeArray<T>.Enumerator GetEnumerator() => AsNativeArray().GetEnumerator();
 
@@ -197,7 +197,7 @@ internal static class OVRNativeList
 
         // Allocates an empty list with sufficient capacity if possible
         // The caller owns the resulting list and must dispose it.
-        public OVRNativeList<T> AllocateEmpty<T>(Allocator allocator) where T : unmanaged => new(_count, allocator);
+        public OVRNativeList<T> AllocateEmpty<T>(Allocator allocator) where T : unmanaged => new OVRNativeList<T>(_count, allocator);
     }
 
     // Use this to allocate a native list without having to provide excess type information.
@@ -212,7 +212,7 @@ internal static class OVRNativeList
     //     list.Add(item.Value);
     //  }
     public static CapacityHelper WithSuggestedCapacityFrom<T>([NoEnumeration] IEnumerable<T> collection)
-        => new(collection.ToNonAlloc().Count);
+        => new CapacityHelper(collection.ToNonAlloc().Count);
 
     // Similar to WithSuggestedCapacityFrom above, but provides the non-allocating enumerable as an out parameter, which
     // can simplify the callsite to this:

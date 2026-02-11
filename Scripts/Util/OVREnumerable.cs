@@ -40,7 +40,7 @@ internal readonly struct OVREnumerable<T> : IEnumerable<T>
     public OVREnumerable(IEnumerable<T> enumerable) => _enumerable = enumerable;
 
     /// <summary>This is an internal member.</summary>
-    public Enumerator GetEnumerator() => new(_enumerable);
+    public Enumerator GetEnumerator() => new Enumerator(_enumerable);
 
     /// <summary>This is an internal member.</summary>
     IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
@@ -269,7 +269,7 @@ static partial class OVRExtensions
     /// <param name="enumerable">The collection you wish to enumerate.</param>
     /// <typeparam name="T">The type of item in the collection.</typeparam>
     /// <returns>Returns a non-allocating enumerable.</returns>
-    internal static OVREnumerable<T> ToNonAlloc<T>([NoEnumeration] this IEnumerable<T> enumerable) => new(enumerable);
+    internal static OVREnumerable<T> ToNonAlloc<T>([NoEnumeration] this IEnumerable<T> enumerable) => new OVREnumerable<T>(enumerable);
 
     /// <summary>
     /// Copies a collection to a `NativeArray`.
