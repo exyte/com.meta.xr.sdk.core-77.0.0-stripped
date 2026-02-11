@@ -46,6 +46,10 @@ using UnityEngine;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 
+#if !(NETSTANDARD2_1 || NET5_0_OR_GREATER)
+using MarshalCompat = System.Runtime.InteropServices.MarshalCompat;
+#endif
+
 #if UNITY_OPENXR_PLUGIN_1_11_0_OR_NEWER
 using UnityEngine.XR.OpenXR.Features.Extensions.PerformanceSettings;
 #endif
@@ -12116,7 +12120,7 @@ public static partial class OVRPlugin
 
         fixed (DynamicObjectClass* ptr = classes)
         {
-            return OVRP_1_104_0.ovrp_SetDynamicObjectTrackedClasses(tracker, new()
+            return OVRP_1_104_0.ovrp_SetDynamicObjectTrackedClasses(tracker, new OVRPlugin.DynamicObjectTrackedClassesSetInfo()
             {
                 Classes = ptr,
                 ClassCount = (uint)classes.Length,
@@ -12511,52 +12515,52 @@ public static partial class OVRPlugin
             [FieldOffset(8)] public double* DoubleValues;
             [FieldOffset(8)] public Bool* BoolValues;
 
-            public static Variant From(byte* value) => new()
+            public static Variant From(byte* value) => new Variant()
             {
                 Type = VariantType.String,
                 StringValue = value,
             };
 
-            public static Variant From(long value) => new()
+            public static Variant From(long value) => new Variant()
             {
                 Type = VariantType.Int,
                 LongValue = value,
             };
 
-            public static Variant From(double value) => new()
+            public static Variant From(double value) => new Variant()
             {
                 Type = VariantType.Double,
                 DoubleValue = value,
             };
 
-            public static Variant From(bool value) => new()
+            public static Variant From(bool value) => new Variant()
             {
                 Type = VariantType.Bool,
                 BoolValue = value ? Bool.True : Bool.False,
             };
 
-            public static Variant From(byte** values, int count) => new()
+            public static Variant From(byte** values, int count) => new Variant()
             {
                 Type = VariantType.StringArray,
                 Count = count,
                 StringValues = values,
             };
 
-            public static Variant From(long* values, int count) => new()
+            public static Variant From(long* values, int count) => new Variant()
             {
                 Type = VariantType.IntArray,
                 Count = count,
                 LongValues = values,
             };
 
-            public static Variant From(double* values, int count) => new()
+            public static Variant From(double* values, int count) => new Variant()
             {
                 Type = VariantType.DoubleArray,
                 Count = count,
                 DoubleValues = values,
             };
 
-            public static Variant From(Bool* values, int count) => new()
+            public static Variant From(Bool* values, int count) => new Variant()
             {
                 Type = VariantType.BoolArray,
                 Count = count,
@@ -12569,7 +12573,12 @@ public static partial class OVRPlugin
             public readonly byte* Key;
             public readonly Variant Value;
 
-            public string KeyStr => Marshal.PtrToStringUTF8(new IntPtr(Key));
+            public string KeyStr =>
+#if NETSTANDARD2_1 || NET5_0_OR_GREATER
+                Marshal.PtrToStringUTF8(new IntPtr(Key));
+#else
+                MarshalCompat.PtrToStringUTF8(new IntPtr(Key));
+#endif
 
             public Annotation(byte* key, Variant value)
             {
@@ -12591,14 +12600,18 @@ public static partial class OVRPlugin
 
                 IntPtr Copy(string str)
                 {
+#if NETSTANDARD2_1 || NET5_0_OR_GREATER
                     var ptr = Marshal.StringToCoTaskMemUTF8(str);
+#else
+                    var ptr = MarshalCompat.StringToCoTaskMemUTF8(str);
+#endif
                     _ownedStrings.Add(ptr);
                     return ptr;
                 }
 
                 public int Count => _entries?.Count ?? 0;
 
-                public static Builder Create() => new()
+                public static Builder Create() => new Builder()
                 {
                     _entries = OVRObjectPool.List<Entry>(),
                     _ownedStrings = OVRObjectPool.List<IntPtr>(),
@@ -12633,7 +12646,7 @@ public static partial class OVRPlugin
                         var index = 0;
                         foreach (var entry in _entries)
                         {
-                            array[index++] = new((byte*)entry.Key, entry.Value);
+                            array[index++] = new Annotation((byte*)entry.Key, entry.Value);
                         }
                     }
 

@@ -31,6 +31,9 @@ using Permission = UnityEngine.Android.Permission;
 #if DEVELOPMENT_BUILD || UNITY_EDITOR
 using System.Linq;
 #endif
+#if !(NETSTANDARD2_1 || NET5_0_OR_GREATER)
+using Util;
+#endif
 
 /// <summary>
 /// A manager for <see cref="OVRSceneAnchor"/>s created using the Room Setup feature.
@@ -329,7 +332,7 @@ public class OVRSceneManager : MonoBehaviour
         /// <remarks>
         /// This is the same as <see cref="List"/> but allows for faster lookup.
         /// </remarks>
-        public static HashSet<string> Set { get; } = new(List);
+        public static HashSet<string> Set { get; } = new HashSet<string>(List);
     }
 
     /// <summary>
@@ -356,7 +359,7 @@ public class OVRSceneManager : MonoBehaviour
         /// <summary>
         /// The set of <see cref="OVRScenePlane"/> representing the walls of the room.
         /// </summary>
-        public List<OVRScenePlane> Walls = new();
+        public List<OVRScenePlane> Walls = new List<OVRScenePlane>();
     }
 
     /// <summary>
@@ -619,7 +622,7 @@ public class OVRSceneManager : MonoBehaviour
         public int SkippedUserNotInRoom;
         public int SkippedAlreadyInstantiated;
 
-        public static Metrics operator +(Metrics lhs, Metrics rhs) => new()
+        public static Metrics operator +(Metrics lhs, Metrics rhs) => new Metrics
         {
             TotalRoomCount = lhs.TotalRoomCount + rhs.TotalRoomCount,
             CandidateRoomCount = lhs.CandidateRoomCount + rhs.CandidateRoomCount,

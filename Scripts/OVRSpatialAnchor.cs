@@ -197,6 +197,8 @@ public partial class OVRSpatialAnchor : MonoBehaviour
     /// <returns>Returns a task-like object that can be used to track the completion of the asynchronous localization operation.</returns>
     public async OVRTask<bool> WhenLocalizedAsync()
     {
+        
+        Debug.Log("=======localized async");
         if (!await WhenCreatedAsync())
         {
             return false;
@@ -836,7 +838,7 @@ public partial class OVRSpatialAnchor : MonoBehaviour
     private static void InvokeMultiAnchorDelegate(ulong requestId, OperationResult result,
         MultiAnchorActionType actionType)
     {
-        if (!MultiAnchorCompletionDelegates.Remove(requestId, out var value))
+        if (!MultiAnchorCompletionDelegates.TryGetValue(requestId, out var value))
         {
             return;
         }
@@ -857,7 +859,7 @@ public partial class OVRSpatialAnchor : MonoBehaviour
                                 $"[{anchor.Uuid}] {nameof(OVRPlugin)}.{nameof(OVRPlugin.SaveSpaceList)} failed with result: {result}.");
                         }
 
-                        if (AsyncRequestTaskIds.Remove(anchor, out var taskId))
+                        if (AsyncRequestTaskIds.TryGetValue(anchor, out var taskId))
                         {
                             OVRTask.SetResult(taskId, result == OperationResult.Success);
                         }
@@ -872,7 +874,7 @@ public partial class OVRSpatialAnchor : MonoBehaviour
                                 $"[{anchor.Uuid}] {nameof(OVRPlugin)}.{nameof(OVRPlugin.ShareSpaces)} failed with result: {result}.");
                         }
 
-                        if (AsyncRequestTaskIds.Remove(anchor, out var taskId))
+                        if (AsyncRequestTaskIds.TryGetValue(anchor, out var taskId))
                         {
                             OVRTask.SetResult(taskId, result);
                         }
@@ -896,7 +898,7 @@ public partial class OVRSpatialAnchor : MonoBehaviour
             $"[{uuid}] Spatial anchor created.",
             $"Failed to create spatial anchor. Destroying {nameof(OVRSpatialAnchor)} component.");
 
-        if (!CreationRequests.Remove(requestId, out var anchor)) return;
+        if (!CreationRequests.TryGetValue(requestId, out var anchor)) return;
 
         if (anchor)
         {
@@ -1359,11 +1361,9 @@ public partial class OVRSpatialAnchor : MonoBehaviour
         unboundAnchors.Clear();
 
         OVRAnchor.FetchResult fetchResult;
-        using (new OVRObjectPool.ListScope<OVRAnchor>(out var anchors))
-        {
-            var result = await OVRAnchor.FetchAnchorsAsync(anchors, fetchOptions, resultsHandler == null
-                ? null
-                : (incrementalResults, staringIndex) =>
+        using (new OVRObjectPool.ListScope<OVRAnchor>(out var anchors)) {
+            var result = resultsHandler == null ? await OVRAnchor.FetchAnchorsAsync(anchors, fetchOptions) :
+                await OVRAnchor.FetchAnchorsAsync(anchors, fetchOptions, (incrementalResults, staringIndex) =>
                 {
                     int? unboundAnchorStartingIndex = null;
 

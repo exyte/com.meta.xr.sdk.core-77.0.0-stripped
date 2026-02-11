@@ -245,7 +245,7 @@ public class OVRPassthroughLayer : MonoBehaviour
     /// <remarks>
     /// This event passes the reference to the current <see cref="OVRPassthroughLayer"/> passthrough layer to subscribers.
     /// </remarks>
-    public UnityEvent<OVRPassthroughLayer> passthroughLayerResumed = new();
+    public UnityEvent<OVRPassthroughLayer> passthroughLayerResumed = new UnityEvent<OVRPassthroughLayer>();
 
     /// <summary>
     /// This color map method allows to recolor the grayscale camera images by specifying a color lookup table.

@@ -71,9 +71,9 @@ public class OVRSceneRoom : MonoBehaviour, IOVRSceneComponent
 
     private Guid _uuid;
 
-    internal static readonly Dictionary<Guid, OVRSceneRoom> SceneRooms = new();
+    internal static readonly Dictionary<Guid, OVRSceneRoom> SceneRooms = new Dictionary<Guid, OVRSceneRoom>();
 
-    internal static readonly List<OVRSceneRoom> SceneRoomsList = new();
+    internal static readonly List<OVRSceneRoom> SceneRoomsList = new List<OVRSceneRoom>();
 
     private void Awake()
     {

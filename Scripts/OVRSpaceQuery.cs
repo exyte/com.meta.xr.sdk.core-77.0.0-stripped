@@ -265,7 +265,7 @@ internal static class OVRSpaceQuery
 
     static readonly Guid[] s_Ids = new Guid[MaxResultsForAnchors];
     static readonly SpaceComponentType[] s_ComponentTypes = new SpaceComponentType[SpaceFilterInfoComponentsMaxSize];
-    static readonly SpaceQueryInfo2 s_TemplateQuery = new()
+    static readonly SpaceQueryInfo2 s_TemplateQuery = new SpaceQueryInfo2()
     {
         QueryType = SpaceQueryType.Action,
         ActionType = SpaceQueryActionType.Load,

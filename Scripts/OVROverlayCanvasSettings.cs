@@ -1,4 +1,5 @@
 /*
+/*
  * Copyright (c) Meta Platforms, Inc. and affiliates.
  * All rights reserved.
  *
@@ -16,7 +17,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
+ #1#
 
 using System;
 using System.Collections;
@@ -180,3 +181,4 @@ public class OVROverlayCanvasSettings : OVRRuntimeAssetsBase
         EnsureInitialized();
     }
 }
+*/

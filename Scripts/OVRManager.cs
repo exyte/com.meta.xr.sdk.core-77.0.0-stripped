@@ -3271,7 +3271,7 @@ public partial class OVRManager : MonoBehaviour, OVRMixedRealityCaptureConfigura
                     var data = eventDataBuffer.MarshalEntireStructAs<OVRDeserialize.EventDataReferenceSpaceChangePending>();
                     TrackingOriginChangePending?.Invoke(
                         (TrackingOrigin)data.ReferenceSpaceType,
-                        data.PoseValid == OVRPlugin.Bool.True ? data.PoseInPreviousSpace.ToOVRPose() : null);
+                        data.PoseValid == OVRPlugin.Bool.True ? data.PoseInPreviousSpace.ToOVRPose() : (OVRPose?)null);
                     break;
                 }
                 default:

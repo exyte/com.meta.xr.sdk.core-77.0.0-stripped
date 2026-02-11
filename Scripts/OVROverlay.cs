@@ -271,7 +271,7 @@ public class OVROverlay : MonoBehaviour
 
     protected bool isOverridePending;
 
-    public static List<OVROverlay> instances = new();
+    public static List<OVROverlay> instances = new List<OVROverlay>();
 
     public int layerId { get; private set; } = 0; // The layer's internal handle in the compositor.
 

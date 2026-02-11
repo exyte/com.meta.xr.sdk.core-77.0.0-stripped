@@ -558,13 +558,13 @@ partial class OVRSpatialAnchor
     }
 
     [Obsolete("See SaveAnchorAsync overload without SaveOptions")]
-    private readonly SaveOptions _defaultSaveOptions = new()
+    private readonly SaveOptions _defaultSaveOptions = new SaveOptions()
     {
         Storage = OVRSpace.StorageLocation.Local,
     };
 
     [Obsolete("See EraseAnchorAsync overload without EraseOptions")]
-    private readonly EraseOptions _defaultEraseOptions = new()
+    private readonly EraseOptions _defaultEraseOptions = new EraseOptions()
     {
         Storage = OVRSpace.StorageLocation.Local,
     };
@@ -964,7 +964,7 @@ partial class OVRSpatialAnchor
     }
 
     [Obsolete]
-    private static readonly Dictionary<OVRSpace.StorageLocation, List<OVRSpatialAnchor>> SaveRequests = new()
+    private static readonly Dictionary<OVRSpace.StorageLocation, List<OVRSpatialAnchor>> SaveRequests = new Dictionary<OVRSpace.StorageLocation, List<OVRSpatialAnchor>>()
     {
         { OVRSpace.StorageLocation.Cloud, new List<OVRSpatialAnchor>() },
         { OVRSpace.StorageLocation.Local, new List<OVRSpatialAnchor>() },
