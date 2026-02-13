@@ -197,8 +197,6 @@ public partial class OVRSpatialAnchor : MonoBehaviour
     /// <returns>Returns a task-like object that can be used to track the completion of the asynchronous localization operation.</returns>
     public async OVRTask<bool> WhenLocalizedAsync()
     {
-        
-        Debug.Log("=======localized async");
         if (!await WhenCreatedAsync())
         {
             return false;
