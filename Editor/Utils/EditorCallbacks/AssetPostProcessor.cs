@@ -27,10 +27,7 @@ namespace Meta.XR.Editor.Callbacks
     {
         static void OnPostprocessAllAssets(string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths, bool didDomainReload)
         {
-            if (didDomainReload)
-            {
-                InitializeOnLoad.OnAllAssetsPostProcessed();
-            }
+            InitializeOnLoad.OnAllAssetsPostProcessed();
         }
     }
 }
