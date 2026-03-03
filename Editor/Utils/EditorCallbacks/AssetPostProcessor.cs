@@ -25,7 +25,7 @@ namespace Meta.XR.Editor.Callbacks
 {
     internal class AssetPostProcessor : UnityEditor.AssetPostprocessor
     {
-        static void OnPostprocessAllAssets(string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths, bool didDomainReload)
+        static void OnPostprocessAllAssets(string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths)
         {
             InitializeOnLoad.OnAllAssetsPostProcessed();
         }
